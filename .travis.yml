@@ -1,0 +1,22 @@
+language: java
+sudo: required
+# necessary in order to avoid killing of certain tests because of memory consumption (not sure why adding `sudo: required` changes this)
+
+# specifying other dists doesn't make sense because `trusty` doesn't have `oraclejdk8` (fails due to `Sorry, but JDK '[oraclejdk8]' is not known.`) which is the only supported JDK currently. Testing on Mac OSX doesn't make too much sense since it will run the same `maven` based build routine.
+
+jdk:
+- oraclejdk8
+- openjdk7
+# - `openjdk8` not available
+# - `oraclejdk7` causes failure `Error: JAVA_HOME is not defined correctly.  We cannot execute /usr/lib/jvm/java-7-oracle/bin/java`
+
+env:
+- MAVEN_OPTS="-Xmx16g -Xms8g"
+# - `"-Xmx6g -Xms2g"` causes `java.lang.OutOfMemoryError: Cannot allocate new FloatPointer(16777216): totalBytes = 2G, physicalBytes = 3G`
+# - `"-Xmx8g -Xms4g"` causes similar `OutOfMemoryError`
+# - `"-Xmx12g -Xms6g"` causes the process to be killed
+
+install: /bin/true
+
+script:
+- mvn install --update-snapshots -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode --show-version && mvn test verify --batch-mode
